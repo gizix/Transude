@@ -2,7 +2,9 @@ import itertools
 import pandas as pd
 import unittest
 from datetime import datetime
-from src.transude import DataFrameFilter, DataFrameQueryBuilder, DataFrameFilterFactory
+from src.transude.data_frame_filter import DataFrameFilter
+from src.transude.data_frame_query_builder import DataFrameQueryBuilder
+from src.transude.data_frame_filter_factory import DataFrameFilterFactory
 
 
 class TestDataFrameFilter(unittest.TestCase):
