@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "transude"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
-  { name="Ewvyx", email="pkpasinphonekasinknife@gmail.com" },
+  { name="Ewvyx"},
 ]
-description = "Simple tool set for filtering pandas DataFrames by building queries from one or more filters."
+description = "Simple tool set for filtering DataFrames by building queries from one or more filters."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

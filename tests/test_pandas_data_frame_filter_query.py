@@ -2,12 +2,12 @@ import itertools
 import pandas as pd
 import unittest
 from datetime import datetime
-from src.transude.data_frame_filter import DataFrameFilter
-from src.transude.data_frame_query_builder import DataFrameQueryBuilder
-from src.transude.data_frame_filter_factory import DataFrameFilterFactory
+from src.transude.pandas.data_frame_filter import DataFrameFilter
+from src.transude.pandas.data_frame_query_builder import DataFrameQueryBuilder
+from src.transude.pandas.data_frame_filter_factory import DataFrameFilterFactory
 
 
-class TestDataFrameFilter(unittest.TestCase):
+class TestPandasDataFrameFilter(unittest.TestCase):
     def test_get_query(self):
         df_filter = DataFrameFilter(column='col1', value='val1', operator='==')
         self.assertEqual("col1 == 'val1'", df_filter.get_query())
@@ -66,7 +66,7 @@ class TestDataFrameFilter(unittest.TestCase):
             df_filter = DataFrameFilter(column='col1', value='val1', operator='invalid')
 
 
-class TestDataFrameQueryBuilder(unittest.TestCase):
+class TestPandasDataFrameQueryBuilder(unittest.TestCase):
     def setUp(self):
         self.df = pd.DataFrame({'col1': ['val1', 'val2', 'val3'], 'col2': ['val4', 'val5', 'val6']})
         self.df_filter1 = DataFrameFilter(column='col1', value='val1', operator='==')
@@ -352,7 +352,7 @@ class TestDataFrameQueryBuilder(unittest.TestCase):
         self.assertTrue(df_filter2.in_use)
 
 
-class TestDataFrameFilterFactory(unittest.TestCase):
+class TestPandasDataFrameFilterFactory(unittest.TestCase):
     def setUp(self):
         self.df = pd.DataFrame({
             'col1': ['val1', 'val2', 'val3'],
