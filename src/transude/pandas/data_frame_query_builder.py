@@ -39,6 +39,18 @@ class DataFrameQueryBuilder:
         self.data_frame_filters.append(data_frame_filter)
         return Self
 
+    def add_filters(self, data_frame_filters: List[DataFrameFilter]) -> Self:
+        """
+        Add a list of DataFrameFilters to the list of filters.
+
+        :param data_frame_filters: List[DataFrameFilter]
+        The DataFrameFilters to add
+        :return: self
+        """
+        for df_filter in data_frame_filters:
+            self.data_frame_filters.append(df_filter)
+        return Self
+
     def remove_filter(self, data_frame_filter: DataFrameFilter) -> Self:
         """
         Remove a DataFrameFilter from the list of filters.

@@ -26,13 +26,14 @@ class TestTransude(unittest.TestCase):
     def test_filter_pandas(self):
         # Test filtering a Pandas DataFrame using Transude
         filtered_df = txd.filter_df(data_frame=self.pd_df, columns='color', values='red', operator='==')
-        self.assertEqual(filtered_df.shape[0], 2)
-        self.assertEqual(set(filtered_df['color']), {'red'})
+        self.assertEqual(2, filtered_df.shape[0])
+        self.assertEqual({'red'}, set(filtered_df['color']))
 
         # Test filtering a Pandas DataFrame using Transude with multiple values and a different operator
-        filtered_df = txd.filter_df(data_frame=self.pd_df, columns='size', values=['small', 'medium'], operator='==')
-        self.assertEqual(filtered_df.shape[0], 2)
-        self.assertEqual(set(filtered_df['size']), {'small', 'medium'})
+        filtered_df = txd.filter_df(data_frame=self.pd_df, columns='size', values=['small', 'medium'],
+                                    operator='==', joiner='or')
+        self.assertEqual(4, filtered_df.shape[0])
+        self.assertEqual({'small', 'medium'}, set(filtered_df['size']))
 
     def test_filter_polars(self):
         # Test filtering a Polars DataFrame using Transude

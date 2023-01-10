@@ -1,25 +1,25 @@
+import pandas
 import pandas as pd
+import polars
 import polars as pl
+from datetime import datetime
+from typing import Union, List
 from src.transude.pandas.data_frame_filter_factory import DataFrameFilterFactory
 from src.transude.pandas.data_frame_query_builder import DataFrameQueryBuilder
 
 
-def filter_df(data_frame, columns, values, operator, joiner='and'):
-    if not isinstance(columns, list):
-        columns = [columns]
-    if not isinstance(values, list):
-        values = [values]
-
-    for column in columns:
-        if column not in data_frame.columns:
-            raise ValueError(f"Column '{column}' does not exist in DataFrame.")
+def filter_df(data_frame: Union[pandas.DataFrame, polars.DataFrame],
+              columns: Union[str, List[str]],
+              values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
+                            Union[str, List[bool]], Union[str, List[datetime.date]]],
+              operator: str,
+              joiner: str = 'and'):
 
     if isinstance(data_frame, pd.DataFrame):
-        df_filters = DataFrameFilterFactory(columns=columns,
-                                            values=values,
-                                            operator=operator,
-                                            joiner=joiner).create_filters()
-        query = DataFrameQueryBuilder(df_filters).build_query()
+        df_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner)
+        df_filters = df_factory.create_filters()
+        query_builder = DataFrameQueryBuilder(df_filters)
+        query = query_builder.build_query()
         return data_frame.query(query)
     elif isinstance(data_frame, pl.DataFrame):
         filter_expression = build_filter_expression(columns, values, operator, joiner)

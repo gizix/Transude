@@ -1,6 +1,7 @@
 import itertools
 import pandas as pd
 import unittest
+import src.transude.transude as txd
 from datetime import datetime
 from src.transude.pandas.data_frame_filter import DataFrameFilter
 from src.transude.pandas.data_frame_query_builder import DataFrameQueryBuilder
@@ -470,3 +471,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         df_filters = factory.create_filters()
         query_builder = DataFrameQueryBuilder(df_filters)
         self.assertEqual(df_filters, query_builder.data_frame_filters)
+        query = query_builder.build_query()
+        self.assertEqual("(col1 == 'val1') or (col1 == 'val2')", query)
+        filtered_df = txd.filter_df(self.df, columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
+        pd.testing.assert_frame_equal(self.df.query(query), filtered_df)
