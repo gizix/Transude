@@ -3,9 +3,9 @@ import pandas as pd
 import unittest
 import transude as txd
 from datetime import datetime
-from data_frame_filter import DataFrameFilter
-from data_frame_filter_manager import DataFrameFilterManager
-from data_frame_filter_factory import DataFrameFilterFactory
+from transude.data_frame_filter import DataFrameFilter
+from transude.data_frame_filter_manager import DataFrameFilterManager
+from transude.data_frame_filter_factory import DataFrameFilterFactory
 
 
 class TestPandasDataFrameFilter(unittest.TestCase):

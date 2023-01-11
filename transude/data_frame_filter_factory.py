@@ -1,7 +1,7 @@
 import itertools
 from datetime import datetime
 from typing import Union, List
-from data_frame_filter import DataFrameFilter
+from .data_frame_filter import DataFrameFilter
 
 
 class DataFrameFilterFactory:

@@ -1,5 +1,5 @@
 from typing import Self, List
-from data_frame_filter import DataFrameFilter
+from .data_frame_filter import DataFrameFilter
 
 
 class DataFrameFilterManager:

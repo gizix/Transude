@@ -1,9 +1,9 @@
 import pandas as pd
 from datetime import datetime
 from typing import Union, List
-from data_frame_filter import DataFrameFilter
-from data_frame_filter_factory import DataFrameFilterFactory
-from data_frame_filter_manager import DataFrameFilterManager
+from .data_frame_filter import DataFrameFilter
+from .data_frame_filter_factory import DataFrameFilterFactory
+from .data_frame_filter_manager import DataFrameFilterManager
 
 
 def filter_df(data_frame: pd.DataFrame,
