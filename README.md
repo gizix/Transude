@@ -11,31 +11,27 @@ Installation:
 Usage:
     
     import pandas as pd
-    import polars as pl
     import transude as txd
     
-    # Create a DataFrame using Pandas or Polars
+    # Create a DataFrame using Pandas
     pd_df = pd.DataFrame(...)
-    pl_df = pl.DataFrame(...)
     
     # Get a filtered version of the DataFrame using Transude
     filtered_pd_df = txd.filter_df(data_frame=pd_df, columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
 
-    filtered_pl_df = txd.filter_df(data_frame=pl_df, columns='col2', values=['val1'], operator='<')
+If you need to manage the DataFrameFilters directly, you can use a DataFrameFilterManager like so:
 
-If you need to manage the DataFrameFilters directly, you can use a DataFrameFilterQueryBuilder like so:
-
-    pd_query_builder = DataFrameQueryBuilder()
+    pd_df_filter_manager = DataFrameFilterManager()
     
     # Example of adding a single DataFrameFilter and clearing the filters.  Filters can be removed one by one as well.
-    pd_query_builder.add_filter(DataFrameFilter(columns='col1', values='val1', operator='==', joiner='or'))
-    pd_query_builder.clear_filters()
+    pd_df_filter_manager.add_filter(DataFrameFilter(columns='col1', values='val1', operator='==', joiner='or'))
+    pd_df_filter_manager.clear_filters()
 
     # The following utilizes the DataFrameFilterFactory to create multiple filters and then adds them all to the builder.
     pd_filter_factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
     pd_filters = pd_filter_factory.create_filters()
-    pd_query_builder.add_filters(pd_filters)
-    query_string = pd_query_builder.build_query()
+    pd_df_filter_manager.add_filters(pd_filters)
+    query_string = pd_df_filter_manager.build_query()
 
     # In order to apply the filters, call query using the query_string
     pd_df.query(query_string)

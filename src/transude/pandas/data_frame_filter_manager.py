@@ -2,7 +2,7 @@ from typing import Self, List
 from .data_frame_filter import DataFrameFilter
 
 
-class DataFrameQueryBuilder:
+class DataFrameFilterManager:
     """
     This class constructs proper string queries using DataFrameFilters for use with the pandas.DataFrame.query() method.
     """

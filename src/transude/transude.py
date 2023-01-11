@@ -1,51 +1,83 @@
-import pandas
 import pandas as pd
-import polars
 import polars as pl
 from datetime import datetime
 from typing import Union, List
+from src.transude.pandas import DataFrameFilter
 from src.transude.pandas.data_frame_filter_factory import DataFrameFilterFactory
-from src.transude.pandas.data_frame_query_builder import DataFrameQueryBuilder
+from src.transude.pandas.data_frame_filter_manager import DataFrameFilterManager
 
 
-def filter_df(data_frame: Union[pandas.DataFrame, polars.DataFrame],
+def filter_df(data_frame: Union[pd.DataFrame, pl.DataFrame],
               columns: Union[str, List[str]],
               values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
                             Union[str, List[bool]], Union[str, List[datetime.date]]],
               operator: str,
-              joiner: str = 'and'):
+              joiner: str = 'and') -> Union[pd.DataFrame, pl.DataFrame]:
+    """
+    Filters a data frame based on a list of columns and values.
 
+    :param data_frame:  The data frame to filter.
+    :param columns:     The columns to filter on.
+    :param values:      The values to filter on.
+    :param operator:    The operator to use.
+    :param joiner:      The joiner to use.
+    :return:            The filtered data frame.
+    """
     if isinstance(data_frame, pd.DataFrame):
         df_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner)
         df_filters = df_factory.create_filters()
-        query_builder = DataFrameQueryBuilder(df_filters)
+        query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
         return data_frame.query(query)
     elif isinstance(data_frame, pl.DataFrame):
-        filter_expression = build_filter_expression(columns, values, operator, joiner)
-        return data_frame.filter(filter_expression)
+        raise NotImplementedError(f"Polars support coming soon!")
     else:
         raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
 
 
-def build_filter_expression(columns, values, operator, joiner):
-    if isinstance(columns, str):
-        columns = [columns]
-    if isinstance(values, str):
-        values = [values]
-    expressions = []
-    for column, value in zip(columns, values):
-        if operator == 'contains':
-            expressions.append(pl.col(column).contains(value))
-        elif operator == 'startswith':
-            expressions.append(pl.col(column).startswith(value))
-        elif operator == 'endswith':
-            expressions.append(pl.col(column).endswith(value))
-        elif operator == 'match':
-            expressions.append(pl.col(column).match(value))
-        else:
-            expressions.append(pl.col(column) == value)
-    if joiner == 'and':
-        return pl.expr.and_(*expressions)
-    elif joiner == 'or':
-        return pl.expr.or_(*expressions)
+def filter_df_from_df_filters(data_frame: Union[pd.DataFrame, pl.DataFrame],
+                              df_filters: List[DataFrameFilter]) -> Union[pd.DataFrame, pl.DataFrame]:
+    """
+    Filters a data frame based on a list of DataFrameFilter objects.
+
+    :param data_frame:  The data frame to filter.
+    :param df_filters:  A list of DataFrameFilter objects.
+    :return:  The filtered data frame.
+    """
+    if isinstance(data_frame, pd.DataFrame):
+        query_builder = DataFrameFilterManager(df_filters)
+        query = query_builder.build_query()
+        return data_frame.query(query)
+    elif isinstance(data_frame, pl.DataFrame):
+        raise NotImplementedError(f"Polars support coming soon!")
+    else:
+        raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
+
+
+def build_df_filters(columns: Union[str, List[str]],
+                     values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
+                                   Union[str, List[bool]], Union[str, List[datetime.date]]],
+                     operator: str,
+                     joiner: str = 'and') -> List[DataFrameFilter]:
+    """
+    Builds a list of DataFrameFilter objects.
+
+    :param columns:     The columns to filter on.
+    :param values:      The values to filter on.
+    :param operator:    The operator to use.
+    :param joiner:      The joiner to use.
+    :return:  list of filters
+    """
+    df_filter_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner)
+    return df_filter_factory.create_filters()
+
+
+def build_query_from_df_filters(df_filters: List[DataFrameFilter]) -> str:
+    """
+    Builds a DataFrame query from a list of DataFrameFilter objects.
+
+    :param df_filters:  A list of DataFrameFilter objects.
+    :return:  The DataFrame query.
+    """
+    query_builder = DataFrameFilterManager(df_filters)
+    return query_builder.build_query()
