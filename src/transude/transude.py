@@ -1,5 +1,4 @@
 import pandas as pd
-import polars as pl
 from datetime import datetime
 from typing import Union, List
 from src.transude.pandas import DataFrameFilter
@@ -7,12 +6,12 @@ from src.transude.pandas.data_frame_filter_factory import DataFrameFilterFactory
 from src.transude.pandas.data_frame_filter_manager import DataFrameFilterManager
 
 
-def filter_df(data_frame: Union[pd.DataFrame, pl.DataFrame],
+def filter_df(data_frame: pd.DataFrame,
               columns: Union[str, List[str]],
               values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
                             Union[str, List[bool]], Union[str, List[datetime.date]]],
               operator: str,
-              joiner: str = 'and') -> Union[pd.DataFrame, pl.DataFrame]:
+              joiner: str = 'and') -> pd.DataFrame:
     """
     Filters a data frame based on a list of columns and values.
 
@@ -29,14 +28,12 @@ def filter_df(data_frame: Union[pd.DataFrame, pl.DataFrame],
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
         return data_frame.query(query)
-    elif isinstance(data_frame, pl.DataFrame):
-        raise NotImplementedError(f"Polars support coming soon!")
     else:
         raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
 
 
-def filter_df_from_df_filters(data_frame: Union[pd.DataFrame, pl.DataFrame],
-                              df_filters: List[DataFrameFilter]) -> Union[pd.DataFrame, pl.DataFrame]:
+def filter_df_from_df_filters(data_frame: pd.DataFrame,
+                              df_filters: List[DataFrameFilter]) -> pd.DataFrame:
     """
     Filters a data frame based on a list of DataFrameFilter objects.
 
@@ -48,8 +45,6 @@ def filter_df_from_df_filters(data_frame: Union[pd.DataFrame, pl.DataFrame],
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
         return data_frame.query(query)
-    elif isinstance(data_frame, pl.DataFrame):
-        raise NotImplementedError(f"Polars support coming soon!")
     else:
         raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
 
