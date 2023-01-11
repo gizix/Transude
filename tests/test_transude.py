@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-import src.transude as txd
+import transude as txd
 
 
 class TestTransude(unittest.TestCase):
