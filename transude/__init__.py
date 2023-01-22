@@ -1,3 +1,4 @@
+import pandas
 import pandas as pd
 from datetime import datetime
 from typing import Union, List
@@ -44,6 +45,21 @@ def filter_df_from_df_filters(data_frame: pd.DataFrame,
     if isinstance(data_frame, pd.DataFrame):
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
+        return data_frame.query(query)
+    else:
+        raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
+
+
+def filter_df_via_manager(data_frame: pd.DataFrame, df_filter_manager: DataFrameFilterManager) -> pd.DataFrame:
+    """
+    Filters a data frame based on a DataFrameFilterManager object.
+
+    :param data_frame:  The data frame to filter.
+    :param df_filter_manager:  A DataFrameFilterManager object.
+    :return:  The filtered data frame.
+    """
+    if isinstance(data_frame, pd.DataFrame):
+        query = df_filter_manager.build_query()
         return data_frame.query(query)
     else:
         raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
