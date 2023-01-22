@@ -20,6 +20,10 @@ class TestTransude(unittest.TestCase):
         self.assertEqual(2, filtered_df.shape[0])
         self.assertEqual({'red'}, set(filtered_df['color']))
 
+        filtered_df = txd.filter_df(data_frame=self.pd_df, columns='id', values='2', operator='>')
+        self.assertEqual(3, filtered_df.shape[0])
+        self.assertEqual({3, 4, 5}, set(filtered_df['id']))
+
         # Test filtering a Pandas DataFrame using Transude with multiple values and a different operator
         filtered_df = txd.filter_df(data_frame=self.pd_df, columns='size', values=['small', 'medium'],
                                     operator='==', joiner='or')

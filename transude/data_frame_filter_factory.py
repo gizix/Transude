@@ -1,4 +1,5 @@
 import itertools
+import pandas as pd
 from datetime import datetime
 from typing import Union, List
 from .data_frame_filter import DataFrameFilter
@@ -20,7 +21,8 @@ class DataFrameFilterFactory:
                  joiner: str = None,
                  filter_id: int = None,
                  match_case: bool = False,
-                 regex: bool = False):
+                 regex: bool = False,
+                 data_frame: pd.DataFrame = None):
         """
         Initializes a DataFrameFilterFactory instance.
 
@@ -56,6 +58,7 @@ class DataFrameFilterFactory:
         self.filter_id = filter_id
         self.match_case = match_case
         self.regex = regex
+        self.data_frame = data_frame
 
     def create_filters(self) -> List[DataFrameFilter]:
         """
@@ -67,7 +70,24 @@ class DataFrameFilterFactory:
             self.values = [self.values]
         if not isinstance(self.columns, list):
             self.columns = [self.columns] * len(self.values)
-        return [DataFrameFilter(column=column, value=str(value), operator=self.operator,
-                                joiner=self.joiner, filter_id=self.filter_id,
-                                match_case=self.match_case, regex=self.regex)
-                for column, value in zip(self.columns, self.values)]
+
+        if self.data_frame is not None:
+            filters = []
+            for column, value in zip(self.columns, self.values):
+                # Get the data type of the column
+                dtype = self.data_frame[column].dtype.name
+                if dtype == 'int64':
+                    value = int(value)
+                elif dtype == 'float64':
+                    value = float(value)
+                elif dtype == 'datetime64[ns]':
+                    value = pd.to_datetime(value)
+                elif dtype == 'object':
+                    value = str(value)
+                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, joiner=self.joiner, filter_id=self.filter_id))
+            return filters
+        else:
+            return [DataFrameFilter(column=column, value=str(value), operator=self.operator,
+                                    joiner=self.joiner, filter_id=self.filter_id,
+                                    match_case=self.match_case, regex=self.regex)
+                    for column, value in zip(self.columns, self.values)]

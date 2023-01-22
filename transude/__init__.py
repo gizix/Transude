@@ -23,13 +23,13 @@ def filter_df(data_frame: pd.DataFrame,
     :return:            The filtered data frame.
     """
     if isinstance(data_frame, pd.DataFrame):
-        df_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner)
+        df_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner, data_frame=data_frame)
         df_filters = df_factory.create_filters()
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
         return data_frame.query(query)
     else:
-        raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
+        raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
 
 
 def filter_df_from_df_filters(data_frame: pd.DataFrame,
@@ -46,14 +46,15 @@ def filter_df_from_df_filters(data_frame: pd.DataFrame,
         query = query_builder.build_query()
         return data_frame.query(query)
     else:
-        raise ValueError(f"Unrecognized data frame type: {type(data_frame)}")
+        raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
 
 
 def build_df_filters(columns: Union[str, List[str]],
                      values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
                                    Union[str, List[bool]], Union[str, List[datetime.date]]],
                      operator: str,
-                     joiner: str = 'and') -> List[DataFrameFilter]:
+                     joiner: str = 'and',
+                     data_frame: pd.DataFrame = None) -> List[DataFrameFilter]:
     """
     Builds a list of DataFrameFilter objects.
 
@@ -61,9 +62,10 @@ def build_df_filters(columns: Union[str, List[str]],
     :param values:      The values to filter on.
     :param operator:    The operator to use.
     :param joiner:      The joiner to use.
+    :param data_frame:  The data frame to filter.
     :return:  list of filters
     """
-    df_filter_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner)
+    df_filter_factory = DataFrameFilterFactory(columns=columns, values=values, operator=operator, joiner=joiner, data_frame=data_frame)
     return df_filter_factory.create_filters()
 
 

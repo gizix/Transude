@@ -373,7 +373,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.reset_counter()  # reset the counter after each test case
 
     def test_create_filters_for_single_column_and_value(self):
-        factory = DataFrameFilterFactory(columns='col1', values='val1', operator='==')
+        factory = DataFrameFilterFactory(columns='col1', values='val1', operator='==', data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(1, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -383,7 +383,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual(1, filters[0].filter_id)
 
     def test_create_filters_for_single_column_and_multiple_values(self):
-        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==')
+        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(2, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -398,7 +398,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_for_multiple_columns_and_values(self):
-        factory = DataFrameFilterFactory(columns=['col1', 'col2'], values=['val1', 'val4'], operator='==')
+        factory = DataFrameFilterFactory(columns=['col1', 'col2'], values=['val1', 'val4'], operator='==', data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(2, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -413,7 +413,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_with_custom_joiner(self):
-        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
+        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or', data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(2, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -428,7 +428,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_with_custom_id(self):
-        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', filter_id=10)
+        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', filter_id=10, data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(2, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -443,7 +443,7 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual(10, filters[1].filter_id)
 
     def test_create_filters_for_single_column_and_multiple_integer_values(self):
-        factory = DataFrameFilterFactory(columns='col1', values=[1, 2, 3], operator='==')
+        factory = DataFrameFilterFactory(columns='col1', values=[1, 2, 3], operator='==', data_frame=self.df)
         filters = factory.create_filters()
         self.assertEqual(3, len(filters))
         self.assertEqual('col1', filters[0].column)
@@ -464,10 +464,10 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
 
     def test_factory_creation_with_invalid_operator(self):
         with self.assertRaises(ValueError):
-            factory = DataFrameFilterFactory(columns='col1', values='val1', operator='invalid')
+            factory = DataFrameFilterFactory(columns='col1', values='val1', operator='invalid', data_frame=self.df)
 
     def test_construct_query_builder_with_filters(self):
-        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
+        factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or', data_frame=self.df)
         df_filters = factory.create_filters()
         query_builder = DataFrameFilterManager(df_filters)
         self.assertEqual(df_filters, query_builder.data_frame_filters)
