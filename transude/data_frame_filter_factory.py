@@ -71,7 +71,9 @@ class DataFrameFilterFactory:
         if not isinstance(self.columns, list):
             self.columns = [self.columns] * len(self.values)
 
-        if self.data_frame is not None:
+        is_string_filter = DataFrameFilter.is_valid_str_operator(self.operator)
+
+        if self.data_frame is not None and not is_string_filter:
             filters = []
             for column, value in zip(self.columns, self.values):
                 # Get the data type of the column

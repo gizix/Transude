@@ -103,5 +103,5 @@ class DataFrameFilter:
             value_clause = f"{repr(self.value)}"
             if self.match_case or self.regex:
                 value_clause = f"{repr(self.value)}, case={self.match_case}, regex={self.regex}"
-            return f"{self.column}.str.{self.operator}({value_clause})"
+            return f"{self.column}.astype('str').str.{self.operator}({value_clause})"
         return f"{self.column} {self.operator} {repr(self.value)}"
