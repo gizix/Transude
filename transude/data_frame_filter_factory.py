@@ -86,10 +86,11 @@ class DataFrameFilterFactory:
                     value = pd.to_datetime(value)
                 elif dtype == 'object':
                     value = str(value)
-                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, joiner=self.joiner, filter_id=self.filter_id))
+                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, joiner=self.joiner,
+                                               filter_id=self.filter_id, data_frame=self.data_frame))
             return filters
         else:
             return [DataFrameFilter(column=column, value=str(value), operator=self.operator,
                                     joiner=self.joiner, filter_id=self.filter_id,
-                                    match_case=self.match_case, regex=self.regex)
+                                    match_case=self.match_case, regex=self.regex, data_frame=self.data_frame)
                     for column, value in zip(self.columns, self.values)]

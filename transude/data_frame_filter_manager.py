@@ -161,11 +161,22 @@ class DataFrameFilterManager:
         The constructed query.
         """
         query = ''
+        previous_filter_id = None
+        current_query = ""
         for df_filter in self.data_frame_filters:
             if not df_filter.in_use:
                 continue
-            if not query:
-                query = f"({df_filter.get_query()})"
-                continue
-            query += f" {df_filter.joiner} ({df_filter.get_query()})"
+            current_filter_id = df_filter.filter_id
+            if previous_filter_id != current_filter_id:
+                if current_query:
+                    query += f'({current_query}'
+                    current_query = ""
+                if previous_filter_id is not None:
+                    query += f') {df_filter.joiner} '
+            if current_query:
+                current_query += f' {df_filter.joiner} '
+            current_query += f"({df_filter.get_query()})"
+            previous_filter_id = current_filter_id
+        if current_query:
+            query += f'({current_query})'
         return query

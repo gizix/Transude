@@ -1,3 +1,4 @@
+import pandas as pd
 
 
 class DataFrameFilter:
@@ -6,7 +7,7 @@ class DataFrameFilter:
     """
     def __init__(self, column: str, value: str, operator: str,
                  in_use: bool = True, joiner: str = None, filter_id: int = None,
-                 match_case: bool = False, regex: bool = False):
+                 match_case: bool = False, regex: bool = False, data_frame: pd.DataFrame = None):
         """
         Initializes a DataFrameFilter instance.
 
@@ -39,6 +40,7 @@ class DataFrameFilter:
         self.filter_id = filter_id
         self.match_case = match_case
         self.regex = regex
+        self.data_frame = data_frame
 
     def __repr__(self) -> str:
         """
@@ -100,8 +102,8 @@ class DataFrameFilter:
         The query string for this filter.
         """
         if DataFrameFilter.is_valid_str_operator(self.operator):  # constructing a str operation query
-            value_clause = f"{repr(self.value)}"
-            if self.match_case or self.regex:
-                value_clause = f"{repr(self.value)}, case={self.match_case}, regex={self.regex}"
+            value_clause = f"{repr(self.value)}, case={self.match_case}, regex={self.regex}"
+            if self.data_frame is not None and self.data_frame[self.column].dtype.name == 'string':
+                return f"{self.column}.str.{self.operator}({value_clause})"
             return f"{self.column}.astype('str').str.{self.operator}({value_clause})"
         return f"{self.column} {self.operator} {repr(self.value)}"
