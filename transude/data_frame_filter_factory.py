@@ -1,8 +1,10 @@
 import itertools
 import pandas as pd
-from datetime import datetime
+import datetime
 from typing import Union, List
 from .data_frame_filter import DataFrameFilter
+
+value_single_typing = str | int | float | bool | datetime.datetime | pd.Timestamp
 
 
 class DataFrameFilterFactory:
@@ -14,15 +16,17 @@ class DataFrameFilterFactory:
 
     def __init__(self,
                  columns: Union[str, List[str]],
-                 values: Union[Union[str, List[str]], Union[str, List[int]], Union[str, List[float]],
-                               Union[str, List[bool]], Union[str, List[datetime.date]]],
+                 values: Union[Union[value_single_typing, List[str]], Union[value_single_typing, List[int]],
+                               Union[value_single_typing, List[float]], Union[value_single_typing, List[bool]],
+                               Union[value_single_typing, List[datetime.datetime]]],
                  operator: str,
                  in_use: bool = True,
                  joiner: str = None,
                  filter_id: int = None,
                  match_case: bool = False,
                  regex: bool = False,
-                 data_frame: pd.DataFrame = None):
+                 data_frame: pd.DataFrame = None,
+                 default_toggle: bool = False):
         """
         Initializes a DataFrameFilterFactory instance.
 
@@ -59,6 +63,7 @@ class DataFrameFilterFactory:
         self.match_case = match_case
         self.regex = regex
         self.data_frame = data_frame
+        self.default_toggle = default_toggle
 
     def create_filters(self) -> List[DataFrameFilter]:
         """
@@ -86,11 +91,13 @@ class DataFrameFilterFactory:
                     value = pd.to_datetime(value)
                 elif dtype == 'object':
                     value = str(value)
-                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, joiner=self.joiner,
-                                               filter_id=self.filter_id, data_frame=self.data_frame))
+                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, in_use=self.in_use,
+                                               joiner=self.joiner, filter_id=self.filter_id, data_frame=self.data_frame,
+                                               default_toggle=self.default_toggle))
             return filters
         else:
-            return [DataFrameFilter(column=column, value=str(value), operator=self.operator,
-                                    joiner=self.joiner, filter_id=self.filter_id,
-                                    match_case=self.match_case, regex=self.regex, data_frame=self.data_frame)
+            return [DataFrameFilter(column=column, value=str(value), operator=self.operator, in_use=self.in_use,
+                                    joiner=self.joiner, filter_id=self.filter_id, match_case=self.match_case,
+                                    regex=self.regex, data_frame=self.data_frame,
+                                    default_toggle=self.default_toggle)
                     for column, value in zip(self.columns, self.values)]

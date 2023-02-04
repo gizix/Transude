@@ -27,7 +27,7 @@ def filter_df(data_frame: pd.DataFrame,
         df_filters = df_factory.create_filters()
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
-        return data_frame.query(query)
+        return data_frame if not query else data_frame.query(query)
     else:
         raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
 
@@ -44,7 +44,7 @@ def filter_df_from_df_filters(data_frame: pd.DataFrame,
     if isinstance(data_frame, pd.DataFrame):
         query_builder = DataFrameFilterManager(df_filters)
         query = query_builder.build_query()
-        return data_frame.query(query)
+        return data_frame if not query else data_frame.query(query)
     else:
         raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
 
@@ -59,7 +59,7 @@ def filter_df_via_manager(data_frame: pd.DataFrame, df_filter_manager: DataFrame
     """
     if isinstance(data_frame, pd.DataFrame):
         query = df_filter_manager.build_query()
-        return data_frame.query(query)
+        return data_frame if not query else data_frame.query(query)
     else:
         raise TypeError(f"Unrecognized data frame type: {type(data_frame)}")
 

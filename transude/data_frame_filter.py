@@ -1,3 +1,4 @@
+import datetime
 import pandas as pd
 
 
@@ -5,9 +6,9 @@ class DataFrameFilter:
     """
     This class represents part of a DataFrame query.
     """
-    def __init__(self, column: str, value: str, operator: str,
-                 in_use: bool = True, joiner: str = None, filter_id: int = None,
-                 match_case: bool = False, regex: bool = False, data_frame: pd.DataFrame = None):
+    def __init__(self, column: str, value: str | int | float | bool | datetime.datetime | pd.Timestamp, operator: str,
+                 in_use: bool = True, joiner: str = None, filter_id: int = None, match_case: bool = False,
+                 regex: bool = False, data_frame: pd.DataFrame = None, default_toggle: bool = False):
         """
         Initializes a DataFrameFilter instance.
 
@@ -41,6 +42,7 @@ class DataFrameFilter:
         self.match_case = match_case
         self.regex = regex
         self.data_frame = data_frame
+        self.default_toggle = default_toggle
 
     def __repr__(self) -> str:
         """
@@ -48,7 +50,8 @@ class DataFrameFilter:
         """
         return f"DataFrameFilter(column='{self.column}', value='{self.value}', " \
                f"operator='{self.operator}', joiner='{self.joiner}', filter_id={self.filter_id}, " \
-               f"match_case={self.match_case}, regex={self.regex})"
+               f"match_case={self.match_case}, regex={self.regex}, default_toggle={self.default_toggle}," \
+               f"data_frame={self.data_frame.__str__()})"
 
     def __str__(self) -> str:
         """
@@ -103,6 +106,8 @@ class DataFrameFilter:
         """
         if DataFrameFilter.is_valid_str_operator(self.operator):  # constructing a str operation query
             value_clause = f"{repr(self.value)}, case={self.match_case}, regex={self.regex}"
+            if self.operator != "contains":
+                value_clause = f"{repr(self.value)}"
             if self.data_frame is not None and self.data_frame[self.column].dtype.name == 'string':
                 return f"{self.column}.str.{self.operator}({value_clause})"
             return f"{self.column}.astype('str').str.{self.operator}({value_clause})"

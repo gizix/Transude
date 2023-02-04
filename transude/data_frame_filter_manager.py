@@ -28,6 +28,10 @@ class DataFrameFilterManager:
     def data_frame_filters(self) -> List[DataFrameFilter]:
         return self._data_frame_filters
 
+    @data_frame_filters.setter
+    def data_frame_filters(self, data_frame_filters: List[DataFrameFilter]):
+        self._data_frame_filters = data_frame_filters
+
     def add_filter(self, data_frame_filter: DataFrameFilter) -> Self:
         """
         Add a DataFrameFilter to the list of filters.
@@ -77,7 +81,15 @@ class DataFrameFilterManager:
         :raises IndexError: if the given index is out of bounds.
         """
         try:
-            del self.data_frame_filters[index]
+            diff = 0
+            for i, item in enumerate(self.data_frame_filters):
+                if item.default_toggle:
+                    diff += 1
+                elif i == index + diff:
+                    del self.data_frame_filters[i]
+                    break
+            if (index + diff) > len(self.data_frame_filters):
+                raise IndexError(f"Could not remove DataFrameFilter at index={index} from {self!r}")
             return Self
         except IndexError as exc:
             exc.add_note(f"Could not remove DataFrameFilter at index={index} from {self!r}")
@@ -100,11 +112,15 @@ class DataFrameFilterManager:
 
     def clear_filters(self) -> Self:
         """
-        Clear all DataFrameFilters from the list of filters.
+        Clear all DataFrameFilters from the list of filters except for default toggle filters.
 
         :return: self
         """
-        self.data_frame_filters.clear()
+        df_filters = []
+        for df_filter in self.data_frame_filters:
+            if df_filter.default_toggle:
+                df_filters.append(df_filter)
+        self.data_frame_filters = df_filters
         return Self
 
     def disable_filters(self) -> Self:
@@ -170,7 +186,7 @@ class DataFrameFilterManager:
             if previous_filter_id != current_filter_id:
                 if current_query:
                     query += f'({current_query}'
-                    current_query = ""
+                    #current_query = ""
                 if previous_filter_id is not None:
                     query += f') {df_filter.joiner} '
             if current_query:

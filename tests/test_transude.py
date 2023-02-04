@@ -1,6 +1,9 @@
-import unittest
 import pandas as pd
 import transude as txd
+import unittest
+from datetime import datetime
+
+from transude import DataFrameFilter, DataFrameFilterManager
 
 
 class TestTransude(unittest.TestCase):
@@ -59,6 +62,39 @@ class TestTransude(unittest.TestCase):
 
     def test_filter_pandas_invalid_operator(self):
         self.assertRaises(ValueError, txd.filter_df, data_frame=self.pd_df, columns='color', values='red', operator='!=')
+
+
+class TestTransudeFunctions(unittest.TestCase):
+    def setUp(self):
+        self.data_frame = pd.DataFrame({
+            'column_1': ['A', 'B', 'C', 'D', 'E'],
+            'column_2': [1, 2, 3, 4, 5],
+            'column_3': [10.1, 20.2, 30.3, 40.4, 50.5],
+            'column_4': [True, False, True, False, True],
+            'column_5': [datetime.now(), datetime.now(), datetime.now(), datetime.now(), datetime.now()]
+        })
+
+    def test_filter_df(self):
+        # Test filtering on a single column
+        filtered_df = txd.filter_df(self.data_frame, 'column_1', 'A', '==')
+        self.assertEqual(1, filtered_df.shape[0])
+        self.assertEqual('A',filtered_df.iloc[0]['column_1'])
+
+        # Test filtering on multiple columns
+        filtered_df = txd.filter_df(self.data_frame, ['column_1', 'column_2'], ['A', 1], '==')
+        self.assertEqual(1, filtered_df.shape[0])
+        self.assertEqual('A', filtered_df.iloc[0]['column_1'])
+        self.assertEqual(1, filtered_df.iloc[0]['column_2'])
+
+        # Test filtering with different operator
+        filtered_df = txd.filter_df(self.data_frame, 'column_2', '3', '>')
+        self.assertEqual(2, filtered_df.shape[0])
+        self.assertEqual(4, filtered_df.iloc[0]['column_2'])
+        self.assertEqual(5, filtered_df.iloc[1]['column_2'])
+
+        # Test filtering with different joiner
+        filtered_df = txd.filter_df(self.data_frame, ['column_1', 'column_2'], ['A', 1], '==', joiner='or')
+        self.assertEqual(1, filtered_df.shape[0])
 
 
 if __name__ == '__main__':
