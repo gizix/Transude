@@ -1,10 +1,12 @@
-import itertools
 import pandas as pd
 import datetime
 from typing import Union, List
 from .data_frame_filter import DataFrameFilter
 
-value_single_typing = str | int | float | bool | datetime.datetime | pd.Timestamp
+ValueSingleTyping = str | int | float | bool | datetime.datetime | pd.Timestamp
+ValueMultiTyping = Union[Union[ValueSingleTyping, List[str]], Union[ValueSingleTyping, List[int]],
+                         Union[ValueSingleTyping, List[float]], Union[ValueSingleTyping, List[bool]],
+                         Union[ValueSingleTyping, List[datetime.datetime]]]
 
 
 class DataFrameFilterFactory:
@@ -12,13 +14,9 @@ class DataFrameFilterFactory:
     This class is used to create a list of properly formed DataFrameFilter instances given
     any columns, any values, a valid operator, and optional parameters.
     """
-    next_filter_id = itertools.count()
-
     def __init__(self,
                  columns: Union[str, List[str]],
-                 values: Union[Union[value_single_typing, List[str]], Union[value_single_typing, List[int]],
-                               Union[value_single_typing, List[float]], Union[value_single_typing, List[bool]],
-                               Union[value_single_typing, List[datetime.datetime]]],
+                 values: ValueMultiTyping,
                  operator: str,
                  in_use: bool = True,
                  joiner: str = None,
@@ -26,7 +24,9 @@ class DataFrameFilterFactory:
                  match_case: bool = False,
                  regex: bool = False,
                  data_frame: pd.DataFrame = None,
-                 default_toggle: bool = False):
+                 omit_on_clear: bool = False,
+                 common_name: str = None,
+                 group_joiner: str = None):
         """
         Initializes a DataFrameFilterFactory instance.
 
@@ -47,13 +47,21 @@ class DataFrameFilterFactory:
         Whether to match the case of the string value(s).
         :param regex: bool (default: False)
         Whether the value(s) is/are regular expressions.
+        :param data_frame: pd.DataFrame (default: None)
+        The DataFrame to filter.
+        :param omit_on_clear: bool (default: False)
+        Option to omit these filters when clearing all filters.
+        :param common_name: str (default: None)
+        Specified common description of the filters.
+        :param group_joiner: str (default: None)
+        How these filters should join with other filters in the query.
         """
         if not DataFrameFilter.is_valid_operator(operator):
             raise ValueError(f"Invalid operator: {operator}")
         if joiner is None:
             joiner = "and"
-        if filter_id is None:
-            filter_id = next(DataFrameFilterFactory.next_filter_id) + 1
+        if group_joiner is None:
+            group_joiner = '&'
         self.columns = columns
         self.values = values
         self.operator = operator
@@ -63,7 +71,9 @@ class DataFrameFilterFactory:
         self.match_case = match_case
         self.regex = regex
         self.data_frame = data_frame
-        self.default_toggle = default_toggle
+        self.omit_on_clear = omit_on_clear
+        self.common_name = common_name
+        self.group_joiner = group_joiner
 
     def create_filters(self) -> List[DataFrameFilter]:
         """
@@ -91,13 +101,28 @@ class DataFrameFilterFactory:
                     value = pd.to_datetime(value)
                 elif dtype == 'object':
                     value = str(value)
-                filters.append(DataFrameFilter(column=column, value=value, operator=self.operator, in_use=self.in_use,
-                                               joiner=self.joiner, filter_id=self.filter_id, data_frame=self.data_frame,
-                                               default_toggle=self.default_toggle))
+                filters.append(DataFrameFilter(column=column,
+                                               value=value,
+                                               operator=self.operator,
+                                               in_use=self.in_use,
+                                               joiner=self.joiner,
+                                               filter_id=self.filter_id,
+                                               data_frame=self.data_frame,
+                                               omit_on_clear=self.omit_on_clear,
+                                               common_name=self.common_name,
+                                               group_joiner=self.group_joiner))
             return filters
         else:
-            return [DataFrameFilter(column=column, value=str(value), operator=self.operator, in_use=self.in_use,
-                                    joiner=self.joiner, filter_id=self.filter_id, match_case=self.match_case,
-                                    regex=self.regex, data_frame=self.data_frame,
-                                    default_toggle=self.default_toggle)
+            return [DataFrameFilter(column=column,
+                                    value=str(value),
+                                    operator=self.operator,
+                                    in_use=self.in_use,
+                                    joiner=self.joiner,
+                                    filter_id=self.filter_id,
+                                    match_case=self.match_case,
+                                    regex=self.regex,
+                                    data_frame=self.data_frame,
+                                    omit_on_clear=self.omit_on_clear,
+                                    common_name=self.common_name,
+                                    group_joiner=self.group_joiner)
                     for column, value in zip(self.columns, self.values)]

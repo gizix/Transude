@@ -29,7 +29,7 @@ class TestTransude(unittest.TestCase):
 
         # Test filtering a Pandas DataFrame using Transude with multiple values and a different operator
         filtered_df = txd.filter_df(data_frame=self.pd_df, columns='size', values=['small', 'medium'],
-                                    operator='==', joiner='or')
+                                    operator='==', joiner='or', group_joiner='or')
         self.assertEqual(4, filtered_df.shape[0])
         self.assertEqual({'small', 'medium'}, set(filtered_df['size']))
 
@@ -61,7 +61,7 @@ class TestTransude(unittest.TestCase):
         self.assertEqual({'blue'}, set(filtered_df['color']))
 
     def test_filter_pandas_invalid_operator(self):
-        self.assertRaises(ValueError, txd.filter_df, data_frame=self.pd_df, columns='color', values='red', operator='!=')
+        self.assertRaises(ValueError, txd.filter_df, data_frame=self.pd_df, columns='color', values='red', operator='!>')
 
 
 class TestTransudeFunctions(unittest.TestCase):

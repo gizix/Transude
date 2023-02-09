@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import pandas as pd
 
 
@@ -6,9 +7,20 @@ class DataFrameFilter:
     """
     This class represents part of a DataFrame query.
     """
-    def __init__(self, column: str, value: str | int | float | bool | datetime.datetime | pd.Timestamp, operator: str,
-                 in_use: bool = True, joiner: str = None, filter_id: int = None, match_case: bool = False,
-                 regex: bool = False, data_frame: pd.DataFrame = None, default_toggle: bool = False):
+    next_filter_id = itertools.count()
+
+    def __init__(self, column: str,
+                 value: str | int | float | bool | datetime.datetime | pd.Timestamp,
+                 operator: str,
+                 in_use: bool = True,
+                 joiner: str = None,
+                 filter_id: int = None,
+                 match_case: bool = False,
+                 regex: bool = False,
+                 data_frame: pd.DataFrame = None,
+                 omit_on_clear: bool = False,
+                 common_name: str = None,
+                 group_joiner: str = None):
         """
         Initializes a DataFrameFilter instance.
 
@@ -28,11 +40,23 @@ class DataFrameFilter:
         Whether to match the case of the string value.
         :param regex: bool (default: False)
         Whether the value is a regular expression.
+        :param data_frame: pd.DataFrame (default: None)
+        DataFrame to filter.
+        :param omit_on_clear: bool (default: False)
+        Option to omit this filter when clearing all filters.
+        :param common_name: str (default: None)
+        Specified common description of the filter.
+        :param group_joiner: str (default: None)
+        How to join this filter (and others that share the same filter_id) with other filters in the query.
         """
         if not DataFrameFilter.is_valid_operator(operator):
             raise ValueError(f"Invalid operator: {operator}")
         if joiner is None:
             joiner = "and"
+        if filter_id is None:
+            filter_id = next(DataFrameFilter.next_filter_id) + 1
+        if group_joiner is None:
+            group_joiner = '&'
         self.column = column
         self.value = value
         self.operator = operator
@@ -42,7 +66,9 @@ class DataFrameFilter:
         self.match_case = match_case
         self.regex = regex
         self.data_frame = data_frame
-        self.default_toggle = default_toggle
+        self.omit_on_clear = omit_on_clear
+        self.common_name = common_name
+        self.group_joiner = group_joiner
 
     def __repr__(self) -> str:
         """
@@ -50,14 +76,14 @@ class DataFrameFilter:
         """
         return f"DataFrameFilter(column='{self.column}', value='{self.value}', " \
                f"operator='{self.operator}', joiner='{self.joiner}', filter_id={self.filter_id}, " \
-               f"match_case={self.match_case}, regex={self.regex}, default_toggle={self.default_toggle}," \
-               f"data_frame={self.data_frame.__str__()})"
+               f"match_case={self.match_case}, regex={self.regex}, data_frame={self.data_frame.__str__()}, " \
+               f"omit_on_clear={self.omit_on_clear}, common_name={self.common_name}, group_joiner={self.group_joiner})"
 
     def __str__(self) -> str:
         """
         Returns the query string for this DataFrameFilter instance.
         """
-        return self.get_query()
+        return self.get_query() if self.common_name is None else self.common_name
 
     @staticmethod
     def is_valid_str_operator(operator: str) -> bool:
@@ -82,7 +108,7 @@ class DataFrameFilter:
 
         :return: bool
         """
-        valid_non_str_operators = ['==', '>', '<', '>=', '<=']
+        valid_non_str_operators = ['==', '>', '<', '>=', '<=', '!=']
         return operator in valid_non_str_operators
 
     @staticmethod

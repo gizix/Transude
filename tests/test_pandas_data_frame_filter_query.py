@@ -43,8 +43,8 @@ class TestPandasDataFrameFilter(unittest.TestCase):
     def test_repr(self):
         df_filter = DataFrameFilter(column='col1', value='val1', operator='==', joiner='and')
         self.assertEqual("DataFrameFilter(column='col1', value='val1', operator='==', joiner='and', "
-                         "filter_id=None, match_case=False, regex=False, default_toggle=False,data_frame=None)",
-                         repr(df_filter))
+                         f"filter_id={df_filter.filter_id}, match_case=False, regex=False, data_frame=None, "
+                         f"omit_on_clear=False, common_name=None, group_joiner=&)", repr(df_filter))
 
     def test_str(self):
         df_filter = DataFrameFilter(column='col1', value='val1', operator='==')
@@ -80,7 +80,7 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='==', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 == 'val1') and (col2 == 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 == 'val1')) & ((col2 == 'val2'))", df_query_builder.build_query())
 
     def test_build_query_and_query(self):
         self.df_query_builder.add_filter(self.df_filter1)
@@ -97,17 +97,17 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='contains', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1.astype('str').str.contains('val1', case=False, regex=False)) and "
-                         "(col2.astype('str').str.contains('val2', case=False, regex=False)))",
+        self.assertEqual("((col1.astype('str').str.contains('val1', case=False, regex=False))) & "
+                         "((col2.astype('str').str.contains('val2', case=False, regex=False)))",
                          df_query_builder.build_query())
 
     def test_build_query_with_startswith_operator(self):
         df_query_builder = DataFrameFilterManager()
-        df_filter1 = DataFrameFilter(column='col1', value='val1', operator='startswith')
-        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='startswith', joiner='or')
+        df_filter1 = DataFrameFilter(column='col1', value='val1', operator='startswith', group_joiner='or')
+        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='startswith', joiner='or', group_joiner='or')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1.astype('str').str.startswith('val1')) or (col2.astype('str').str.startswith('val2')))", df_query_builder.build_query())
+        self.assertEqual("((col1.astype('str').str.startswith('val1'))) or ((col2.astype('str').str.startswith('val2')))", df_query_builder.build_query())
 
     def test_build_query_with_endswith_operator(self):
         df_query_builder = DataFrameFilterManager()
@@ -115,15 +115,15 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='endswith', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1.astype('str').str.endswith('val1')) and (col2.astype('str').str.endswith('val2')))", df_query_builder.build_query())
+        self.assertEqual("((col1.astype('str').str.endswith('val1'))) & ((col2.astype('str').str.endswith('val2')))", df_query_builder.build_query())
 
     def test_build_query_with_match_operator(self):
         df_query_builder = DataFrameFilterManager()
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='match')
-        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='match', joiner='or')
+        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='match', joiner='or', group_joiner='or')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1.astype('str').str.match('val1')) or (col2.astype('str').str.match('val2')))", df_query_builder.build_query())
+        self.assertEqual("((col1.astype('str').str.match('val1'))) or ((col2.astype('str').str.match('val2')))", df_query_builder.build_query())
 
     def test_build_query_with_non_str_operators(self):
         df_query_builder = DataFrameFilterManager()
@@ -131,35 +131,35 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='==', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 == 'val1') and (col2 == 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 == 'val1')) & ((col2 == 'val2'))", df_query_builder.build_query())
 
         df_query_builder = DataFrameFilterManager()
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='>')
-        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='>', joiner='or')
+        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='>', joiner='or', group_joiner='or')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 > 'val1') or (col2 > 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 > 'val1')) or ((col2 > 'val2'))", df_query_builder.build_query())
 
         df_query_builder = DataFrameFilterManager()
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='<')
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='<', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 < 'val1') and (col2 < 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 < 'val1')) & ((col2 < 'val2'))", df_query_builder.build_query())
 
         df_query_builder = DataFrameFilterManager()
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='>=')
-        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='>=', joiner='or')
+        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='>=', joiner='or', group_joiner='or')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 >= 'val1') or (col2 >= 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 >= 'val1')) or ((col2 >= 'val2'))", df_query_builder.build_query())
 
         df_query_builder = DataFrameFilterManager()
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='<=')
         df_filter2 = DataFrameFilter(column='col2', value='val2', operator='<=', joiner='and')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
-        self.assertEqual("((col1 <= 'val1') and (col2 <= 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 <= 'val1')) & ((col2 <= 'val2'))", df_query_builder.build_query())
 
     def test_add_and_remove_filters(self):
         df_query_builder = DataFrameFilterManager()
@@ -219,7 +219,7 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
 
-        self.assertEqual("((col1 == 'val1') and (col2 == 'val2'))", df_query_builder.build_query())
+        self.assertEqual("((col1 == 'val1')) & ((col2 == 'val2'))", df_query_builder.build_query())
 
     def test_build_query_with_all_filters_disabled(self):
         df_query_builder = DataFrameFilterManager()
@@ -288,19 +288,19 @@ class TestPandasDataFrameQueryBuilder(unittest.TestCase):
         df_query_builder.add_filter(df_filter2)
         df_query_builder.add_filter(df_filter3)
 
-        self.assertEqual("((col1 == 'val1') and (col3 == 'val3'))", df_query_builder.build_query())
+        self.assertEqual("((col1 == 'val1')) & ((col3 == 'val3'))", df_query_builder.build_query())
 
     def test_build_query_with_different_joiners(self):
         df_query_builder = DataFrameFilterManager()
 
         df_filter1 = DataFrameFilter(column='col1', value='val1', operator='==', in_use=True, joiner='or')
-        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='==', in_use=True, joiner='and')
-        df_filter3 = DataFrameFilter(column='col3', value='val3', operator='==', in_use=True, joiner='or')
+        df_filter2 = DataFrameFilter(column='col2', value='val2', operator='==', in_use=True, joiner='and', group_joiner='and')
+        df_filter3 = DataFrameFilter(column='col3', value='val3', operator='==', in_use=True, joiner='or', group_joiner='or')
         df_query_builder.add_filter(df_filter1)
         df_query_builder.add_filter(df_filter2)
         df_query_builder.add_filter(df_filter3)
 
-        self.assertEqual("((col1 == 'val1') and (col2 == 'val2') or (col3 == 'val3'))", df_query_builder.build_query())
+        self.assertEqual("((col1 == 'val1')) and ((col2 == 'val2')) or ((col3 == 'val3'))", df_query_builder.build_query())
 
     def test_build_query_with_contains_operator_and_match_case(self):
         df_query_builder = DataFrameFilterManager()
@@ -382,7 +382,6 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('val1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('and', filters[0].joiner)
-        self.assertEqual(1, filters[0].filter_id)
 
     def test_create_filters_for_single_column_and_multiple_values(self):
         factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', data_frame=self.df)
@@ -392,12 +391,10 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('val1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('and', filters[0].joiner)
-        self.assertEqual(1, filters[0].filter_id)
         self.assertEqual('col1', filters[1].column)
         self.assertEqual('val2', filters[1].value)
         self.assertEqual('==', filters[1].operator)
         self.assertEqual('and', filters[1].joiner)
-        self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_for_multiple_columns_and_values(self):
         factory = DataFrameFilterFactory(columns=['col1', 'col2'], values=['val1', 'val4'], operator='==', data_frame=self.df)
@@ -407,12 +404,10 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('val1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('and', filters[0].joiner)
-        self.assertEqual(1, filters[0].filter_id)
         self.assertEqual('col2', filters[1].column)
         self.assertEqual('val4', filters[1].value)
         self.assertEqual('==', filters[1].operator)
         self.assertEqual('and', filters[1].joiner)
-        self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_with_custom_joiner(self):
         factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', joiner='or', data_frame=self.df)
@@ -422,12 +417,10 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('val1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('or', filters[0].joiner)
-        self.assertEqual(1, filters[0].filter_id)
         self.assertEqual('col1', filters[1].column)
         self.assertEqual('val2', filters[1].value)
         self.assertEqual('==', filters[1].operator)
         self.assertEqual('or', filters[1].joiner)
-        self.assertEqual(1, filters[1].filter_id)
 
     def test_create_filters_with_custom_id(self):
         factory = DataFrameFilterFactory(columns='col1', values=['val1', 'val2'], operator='==', filter_id=10, data_frame=self.df)
@@ -437,12 +430,10 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('val1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('and', filters[0].joiner)
-        self.assertEqual(10, filters[0].filter_id)
         self.assertEqual('col1', filters[1].column)
         self.assertEqual('val2', filters[1].value)
         self.assertEqual('==', filters[1].operator)
         self.assertEqual('and', filters[1].joiner)
-        self.assertEqual(10, filters[1].filter_id)
 
     def test_create_filters_for_single_column_and_multiple_integer_values(self):
         factory = DataFrameFilterFactory(columns='col1', values=[1, 2, 3], operator='==', data_frame=self.df)
@@ -452,17 +443,14 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         self.assertEqual('1', filters[0].value)
         self.assertEqual('==', filters[0].operator)
         self.assertEqual('and', filters[0].joiner)
-        self.assertEqual(1, filters[0].filter_id)
         self.assertEqual('col1', filters[1].column)
         self.assertEqual('2', filters[1].value)
         self.assertEqual('==', filters[1].operator)
         self.assertEqual('and', filters[1].joiner)
-        self.assertEqual(1, filters[1].filter_id)
         self.assertEqual('col1', filters[2].column)
         self.assertEqual('3', filters[2].value)
         self.assertEqual('==', filters[2].operator)
         self.assertEqual('and', filters[2].joiner)
-        self.assertEqual(1, filters[2].filter_id)
 
     def test_factory_creation_with_invalid_operator(self):
         with self.assertRaises(ValueError):
@@ -474,6 +462,6 @@ class TestPandasDataFrameFilterFactory(unittest.TestCase):
         query_builder = DataFrameFilterManager(df_filters)
         self.assertEqual(df_filters, query_builder.data_frame_filters)
         query = query_builder.build_query()
-        self.assertEqual("((col1 == 'val1') or (col1 == 'val2'))", query)
+        self.assertEqual("((col1 == 'val1')) & ((col1 == 'val2'))", query)
         filtered_df = txd.filter_df(self.df, columns='col1', values=['val1', 'val2'], operator='==', joiner='or')
         pd.testing.assert_frame_equal(self.df.query(query), filtered_df)

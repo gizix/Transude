@@ -83,7 +83,7 @@ class DataFrameFilterManager:
         try:
             diff = 0
             for i, item in enumerate(self.data_frame_filters):
-                if item.default_toggle:
+                if item.omit_on_clear:
                     diff += 1
                 elif i == index + diff:
                     del self.data_frame_filters[i]
@@ -118,7 +118,7 @@ class DataFrameFilterManager:
         """
         df_filters = []
         for df_filter in self.data_frame_filters:
-            if df_filter.default_toggle:
+            if df_filter.omit_on_clear:
                 df_filters.append(df_filter)
         self.data_frame_filters = df_filters
         return Self
@@ -177,22 +177,33 @@ class DataFrameFilterManager:
         The constructed query.
         """
         query = ''
-        previous_filter_id = None
-        current_query = ""
-        for df_filter in self.data_frame_filters:
+        current_filter_id = None
+        next_filter_id = None
+        current_query = ''
+        group_query = ''
+
+        for index, df_filter in enumerate(self.data_frame_filters):
             if not df_filter.in_use:
                 continue
+
             current_filter_id = df_filter.filter_id
-            if previous_filter_id != current_filter_id:
+            if index + 1 < len(self.data_frame_filters):
+                next_filter_id = self.data_frame_filters[index + 1].filter_id
+            else:
+                next_filter_id = None
+
+            if not group_query:
                 if current_query:
-                    query += f'({current_query}'
-                    #current_query = ""
-                if previous_filter_id is not None:
-                    query += f') {df_filter.joiner} '
-            if current_query:
-                current_query += f' {df_filter.joiner} '
-            current_query += f"({df_filter.get_query()})"
-            previous_filter_id = current_filter_id
+                    group_query += f' {df_filter.group_joiner} '
+                group_query += f'(({df_filter.get_query()})'
+
+            if next_filter_id != current_filter_id:
+                group_query += f')'
+                current_query += group_query
+                group_query = ''
+            else:
+                group_query += f' {df_filter.joiner} ({df_filter.get_query()})'
+
         if current_query:
-            query += f'({current_query})'
+            query += f'{current_query}'
         return query
