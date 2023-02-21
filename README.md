@@ -17,8 +17,8 @@ Usage:
     import pandas as pd
     import transude as txd
     
-    # Create a DataFrame using Pandas
-    pd_df = pd.DataFrame(...)
+    # Create a DataFrame using Pandas 
+    pd_df = pd.read_csv('path/to/csv')  # or however you get your DataFrame
     
     # Get a filtered version of the DataFrame using Transude
     filtered_pd_df = \
